@@ -7,6 +7,7 @@ import {
   Text,
   UIManager,
   View,
+  ViewPropTypes,
 } from 'react-native';
 import React, { Component } from 'react';
 
@@ -16,21 +17,20 @@ import _ from 'lodash';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = 0.25 * SCREEN_WIDTH;
 const SWIPE_OUT_DURATION = 250;
-const PRELOAD_CARDS = 2;
+const PRELOAD_CARDS = 3;
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
-    borderWidth: 5,
-    borderColor: 'pink',
   },
   cardContainer: {
     flex: 1,
     position: 'absolute',
-    borderWidth: 5,
-    borderColor: 'blue',
-    // width: SCREEN_WIDTH,
-  }
+  },
+  swipedAllContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
 const propTypes = {
@@ -39,6 +39,7 @@ const propTypes = {
   })).isRequired,
   renderCard: PropTypes.func.isRequired,
   renderSwipedAll: PropTypes.func,
+  containerStyle: ViewPropTypes.style,
 };
 
 const defaultProps = {
@@ -54,6 +55,7 @@ class DeckSwiper extends Component {
     this.state = {
       currentCardIndex: 0,
       containerLayout: {},
+      cardLayout: {},
     };
   }
 
@@ -79,6 +81,14 @@ class DeckSwiper extends Component {
         }
       }
     });
+  }
+
+  setContainerRef = (ref) => {
+    this.Container = ref;
+  }
+
+  setCardRef = (ref) => {
+    this.Card = ref;
   }
 
   swipeRight() {
@@ -116,12 +126,32 @@ class DeckSwiper extends Component {
     this.setState({ containerLayout: nativeEvent.layout });
   }
 
-  getCardLayoutStyles() {
-    console.log(this.state.containerLayout.width);
-    const containerBorderWidth = StyleSheet.flatten(styles.container).borderWidth || 0;
+  updateCardLayout = ({ nativeEvent }) => {
+    this.setState({ cardLayout: nativeEvent.layout });
+  }
+
+  getContainerHeightStyle() {
+    const flattenContainerStyle = StyleSheet.flatten(this.props.containerStyle);
+    const containerBorderWidth = (flattenContainerStyle.borderWidth || 0) + (flattenContainerStyle.padding || 0);
     return ({
-      width: this.state.containerLayout.width - containerBorderWidth * 2,
-      // height: this.containerLayout.height,
+      height: this.state.cardLayout.height + containerBorderWidth * 2,
+    });
+  }
+
+  getCardLayoutStyles() {
+    const flattenContainerStyle = StyleSheet.flatten(this.props.containerStyle);
+    const containerBorderWidth = flattenContainerStyle.borderWidth || 0;
+    const containerPadding = flattenContainerStyle.padding || 0;
+    const containerPaddingTop = flattenContainerStyle.paddingTop !== undefined ? flattenContainerStyle.paddingTop : containerPadding;
+    const containerPaddingLeft = flattenContainerStyle.paddingLeft !== undefined ? flattenContainerStyle.paddingLeft : containerPadding;
+    const containerPaddingRight = flattenContainerStyle.paddingRight !== undefined ? flattenContainerStyle.paddingRight : containerPadding;
+    const actualPadding = containerPaddingLeft + containerPaddingRight;
+    const offset = containerBorderWidth * 2 + actualPadding;
+
+    return ({
+      width: this.state.containerLayout.width - offset,
+      marginLeft: containerPaddingLeft,
+      marginTop: containerPaddingTop,
     });
   }
 
@@ -137,7 +167,7 @@ class DeckSwiper extends Component {
     });
   }
 
-  getNextCardAnimatedStyles(i) {
+  getBackgroundCardAnimatedStyles(i) {
     if (i === this.state.currentCardIndex + 1) {
       const scale = this.position.x.interpolate({
         inputRange: [-SCREEN_WIDTH * 1.5, 0, SCREEN_WIDTH * 1.5],
@@ -147,16 +177,20 @@ class DeckSwiper extends Component {
         transform: [{ scale }],
       })
     }
-    return null;
+    return ({ opacity: 0 });
+  }
+
+  renderSwipedAll = () => {
+    return this.props.renderSwipedAll ? this.props.renderSwipedAll() : (
+      <View style={styles.swipedAllContainer}>
+        <Text>No more cards</Text>
+      </View>
+    );
   }
 
   renderCards() {
     if (this.state.currentCardIndex >= this.props.dataSource.length) {
-      return this.props.renderSwipedAll ? this.props.renderSwipedAll() : (
-        <View>
-          <Text>No more cards</Text>
-        </View>
-      );
+      return this.renderSwipedAll();
     }
 
     return this.props.dataSource.map((item, i) => {
@@ -165,8 +199,15 @@ class DeckSwiper extends Component {
       } else if (i === this.state.currentCardIndex) {
         return (
           <Animated.View
+            ref={this.setCardRef}
             key={item.id}
-            style={[styles.cardContainer, this.getCardLayoutStyles(), this.getCardAnimatedStyles(), { zIndex: 99 }]}
+            style={[
+              styles.cardContainer,
+              this.getCardLayoutStyles(),
+              this.getCardAnimatedStyles(),
+              { zIndex: 99 },
+            ]}
+            onLayout={this.updateCardLayout}
             {...this.panResponder.panHandlers}
           >
             {this.props.renderCard(item)}
@@ -176,7 +217,11 @@ class DeckSwiper extends Component {
         return (
           <Animated.View
             key={item.id}
-            style={[styles.cardContainer, this.getCardLayoutStyles(), this.getNextCardAnimatedStyles(i)]}
+            style={[
+              styles.cardContainer,
+              this.getCardLayoutStyles(),
+              this.getBackgroundCardAnimatedStyles(i),
+            ]}
           >
             {this.props.renderCard(item)}
           </Animated.View>
@@ -189,7 +234,15 @@ class DeckSwiper extends Component {
 
   render() {
     return (
-      <View style={styles.container} onLayout={this.updateContainerLayout}>
+      <View
+        ref={this.setContainerRef}
+        style={[
+          styles.container,
+          this.getContainerHeightStyle(),
+          this.props.containerStyle,
+        ]}
+        onLayout={this.updateContainerLayout}
+      >
         {this.renderCards()}
       </View>
     );

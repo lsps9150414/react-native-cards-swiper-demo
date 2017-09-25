@@ -9,8 +9,6 @@ import {
 import React, { Component } from 'react';
 
 import DeckSwiper from './DeckSwiper';
-import FastImage from 'react-native-fast-image';
-import Swiper from 'react-native-deck-swiper';
 
 export default class App extends Component {
   constructor(props) {
@@ -22,9 +20,9 @@ export default class App extends Component {
   }
 
   renderCard = (item) => (
-    <View style={{ flex: 1, backgroundColor: 'red', alignItems: 'center' }}>
+    <View style={{ flex: 1, borderWidth: 5, borderColor: 'orange', height: 300 }}>
       <Image
-        style={{ flex: 1, width: 100, aspectRatio: 0.5, height: undefined, resizeMode: 'cover', backgroundColor: 'red' }}
+        style={{ flex: 1, width: undefined, height: undefined, resizeMode: 'contain', backgroundColor: 'black' }}
         source={{ uri: item.uri }}
       />
       <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center' }}>
@@ -56,8 +54,9 @@ export default class App extends Component {
           ref={(swiper) => { this.Swiper = swiper; }}
           dataSource={this.state.index % 2 === 0 ? cards : cards2}
           renderCard={this.renderCard}
+          containerStyle={{ zIndex: 99, borderWidth: 0, borderColor: 'red', margin: 20 }}
         />
-        <View style={{ flex: 1, marginTop: 30, borderWidth: 5, borderColor: 'red' }}>
+        <View style={{ flex: 1, marginTop: 30 }}>
           <Button
             title={'Swipe Right'}
             onPress={() => { this.Swiper.swipeRight(); }}
@@ -70,11 +69,11 @@ export default class App extends Component {
             title={'Update dataSource'}
             onPress={() => { this.setState({ index: this.state.index + 1 }); }}
           />
-          <Button
+          {/* <Button
             title={'re-render'}
             onPress={() => { this.setState({ toggleRender: this.state.toggleRender + 1 }); }}
           />
-          <Text style={{ textAlign: 'center' }}>{this.state.toggleRender}</Text>
+          <Text style={{ textAlign: 'center' }}>{this.state.toggleRender}</Text> */}
         </View>
       </View>
     );

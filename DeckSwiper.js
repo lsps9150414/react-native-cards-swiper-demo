@@ -16,7 +16,7 @@ import _ from 'lodash';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = 0.25 * SCREEN_WIDTH;
-const SWIPE_OUT_DURATION = 250;
+const SWIPE_OUT_DURATION = 150;
 const PRELOAD_CARDS = 3;
 
 const styles = StyleSheet.create({
@@ -77,7 +77,7 @@ class DeckSwiper extends Component {
         } else if (gesture.dx < -SWIPE_THRESHOLD) {
           this.forceSwipe('left');
         } else {
-          this.resetPosition();
+          this.resetCardPosition();
         }
       }
     });
@@ -104,10 +104,10 @@ class DeckSwiper extends Component {
     Animated.timing(this.position, {
       toValue: { x, y: 0 },
       duration: SWIPE_OUT_DURATION
-    }).start(() => this.onSwipeComplete(direction));
+    }).start(() => this.handleSwipeComplete(direction));
   }
 
-  onSwipeComplete(direction) {
+  handleSwipeComplete(direction) {
     const { onSwipeLeft, onSwipeRight, dataSource } = this.props;
     const item = dataSource[this.state.currentCardIndex];
 
@@ -116,7 +116,7 @@ class DeckSwiper extends Component {
     this.setState({ currentCardIndex: this.state.currentCardIndex + 1 });
   }
 
-  resetPosition() {
+  resetCardPosition() {
     Animated.spring(this.position, {
       toValue: { x: 0, y: 0 }
     }).start();

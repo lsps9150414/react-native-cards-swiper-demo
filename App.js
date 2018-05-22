@@ -19,8 +19,24 @@ export default class App extends Component {
     };
   }
 
+  cards = [
+    { id: 1, uri: 'https://unsplash.it/2000/?image=10' },
+    { id: 2, uri: 'https://unsplash.it/2000/?image=20' },
+    { id: 3, uri: 'https://unsplash.it/2000/?image=30' },
+    { id: 4, uri: 'https://unsplash.it/2000/?image=40' },
+    { id: 5, uri: 'https://unsplash.it/2000/?image=50' },
+  ];
+
+  cards2 = [
+    { id: 10, uri: 'https://unsplash.it/2000/?image=100' },
+    { id: 20, uri: 'https://unsplash.it/2000/?image=200' },
+    { id: 30, uri: 'https://unsplash.it/2000/?image=300' },
+    { id: 40, uri: 'https://unsplash.it/2000/?image=400' },
+    { id: 50, uri: 'https://unsplash.it/2000/?image=500' },
+  ];
+
   renderCard = (item) => (
-    <View style={{ height: 300, alignItems: 'center', alignSelf: 'center' }}>
+    <View style={{ flex: 1, alignItems: 'center', alignSelf: 'center' }}>
       <Image
         style={{ flex: 1, aspectRatio: 1, width: undefined, height: undefined, resizeMode: 'cover', backgroundColor: 'black' }}
         source={{ uri: item.uri }}
@@ -32,32 +48,19 @@ export default class App extends Component {
   )
 
   render() {
-    const cards = [
-      { id: 1, uri: 'https://unsplash.it/2000/?image=10' },
-      { id: 2, uri: 'https://unsplash.it/2000/?image=20' },
-      { id: 3, uri: 'https://unsplash.it/2000/?image=30' },
-      { id: 4, uri: 'https://unsplash.it/2000/?image=40' },
-      { id: 5, uri: 'https://unsplash.it/2000/?image=50' },
-    ];
 
-    const cards2 = [
-      { id: 10, uri: 'https://unsplash.it/2000/?image=100' },
-      { id: 20, uri: 'https://unsplash.it/2000/?image=200' },
-      { id: 30, uri: 'https://unsplash.it/2000/?image=300' },
-      { id: 40, uri: 'https://unsplash.it/2000/?image=400' },
-      { id: 50, uri: 'https://unsplash.it/2000/?image=500' },
-    ];
 
     return (
       <View style={{ flex: 1, marginTop: 20 }}>
         <CardSwiper
           ref={(swiper) => { this.Swiper = swiper; }}
-          dataSource={this.state.index % 2 === 0 ? cards : cards2}
+          data={this.state.index % 2 === 0 ? this.cards : this.cards2}
           renderCard={this.renderCard}
-          containerStyle={{ zIndex: 99, borderWidth: 2, borderColor: 'gray', margin: 10, padding: 10 }}
+          containerStyle={{ flex: 1, zIndex: 99, borderWidth: 2, borderColor: 'gray', margin: 10, padding: 10 }}
           swipeThresholdDistanceFactor={0.25}
+          enableFillContainer
         />
-        <View style={{ flex: 1, marginTop: 30 }}>
+        <View style={{ marginTop: 20 }}>
           <Button
             title={'Swipe Right'}
             onPress={() => { this.Swiper.swipeRight(); }}
